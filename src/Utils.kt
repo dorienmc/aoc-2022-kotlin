@@ -9,13 +9,26 @@ fun readInput(name: String) = File("src/resources", "$name.txt")
     .readLines()
 
 /**
- * Converts string to md5 hash.
+ * Reads lines from the given input txt file.
  */
-fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
-    .toString(16)
-    .padStart(32, '0')
+fun readInput(day: Int, test: Boolean = false): List<String> {
+    val dayNr = day.toString().padStart(2,'0');
+    if (test){
+        return readInput("Day${dayNr}_test")
+    } else {
+        return readInput("Day${dayNr}")
+    }
+}
 
-/**
- * The cleaner shorthand for printing output.
- */
-fun Any?.println() = println(this)
+    /**
+     * Converts string to md5 hash.
+     */
+    fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
+        .toString(16)
+        .padStart(32, '0')
+
+    /**
+     * The cleaner shorthand for printing output.
+     */
+    fun Any?.println() = println(this)
+
