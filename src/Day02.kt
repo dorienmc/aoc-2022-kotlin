@@ -1,4 +1,16 @@
 // --- Day 2: Rock Paper Scissors ---
+
+class Day02 : Day<Int> {
+    override val index = 2
+
+    override fun part1(input: List<String>): Int {
+        return input.map{ calcScore1(it.split(" ")) }.sum()
+    }
+
+    override fun part2(input: List<String>): Int {
+        return input.map{ calcScore2(it.split(" ")) }.sum()
+    }
+}
 enum class OutCome(val score: Int) {
     LOSE(0),
     DRAW(3),
@@ -93,19 +105,13 @@ fun calcScore2(opponent: Shape, expectedOutCome: OutCome) : Int {
 }
 
 fun main() {
-    fun part1(input: List<String>): Int {
-        return input.map{ calcScore1(it.split(" ")) }.sum()
-    }
-
-    fun part2(input: List<String>): Int {
-        return input.map{ calcScore2(it.split(" ")) }.sum()
-    }
+    val day = Day02()
 
     // test if implementation meets criteria from the description, like:
-    val testInput = readInput("Day02_test")
-    check(part1(testInput) == 15)
+    val testInput = readInput(day.index, true)
+    check(day.part1(testInput) == 15)
 
-    val input = readInput("Day02")
-    part1(input).println()
-    part2(input).println()
+    val input = readInput(day.index)
+    day.part1(input).println()
+    day.part2(input).println()
 }

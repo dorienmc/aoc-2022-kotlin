@@ -1,19 +1,31 @@
 // --- Day X: ??? ---
+interface Day<T> {
+    val index: Int
+
+    fun part1(input: List<String>): T
+
+    fun part2(input: List<String>): T
+}
 
 fun main() {
-    fun part1(input: List<String>): Int {
-        return 0;
-    }
+    class ADay: Day<Int> {
+        override val index = 1
+        override fun part1(input: List<String>): Int {
+            return 0
+        }
 
-    fun part2(input: List<String>): Int {
-        return 0;
+        override fun part2(input: List<String>): Int {
+            return 0
+        }
+
     }
+    val day = ADay()
 
     // test if implementation meets criteria from the description, like:
-    val testInput = readInput("Day01_test")
-    check(part1(testInput) == 1)
+    val testInput = readInput(day.index, true)
+    check(day.part1(testInput) == 0)
 
-    val input = readInput("Day01")
-    part1(input).println()
-    part2(input).println()
+    val input = readInput(day.index)
+    day.part1(input).println()
+    day.part2(input).println()
 }
