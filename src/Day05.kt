@@ -1,5 +1,4 @@
 // --- Day 5: Supply Stacks ---
-val FROM = " from "
 
 class Day05 : Day<String> {
     override val index = 5
@@ -9,11 +8,17 @@ class Day05 : Day<String> {
         crates = Crates(input.toMutableList())
     }
 
+    fun readLine(line: String) : Triple<Int, Int, Int> {
+        val (lsh, rhs) = line.split(" from ")
+        val (_,moveNum) = lsh.split(" ")
+        val (fromS, toS) = rhs.split(" to ")
+
+        return Triple(moveNum.toInt(),fromS.toInt(),toS.toInt())
+    }
+
     override fun part1(input: List<String>): String {
         input.filter{ it.isNotEmpty()}.forEach { line ->
-            val moveNum = line.split(FROM)[0].split(" ")[1].toInt()
-            val fromStack = line.split(FROM)[1].split(" to ")[0].toInt()
-            val toStack = line.split(FROM)[1].split(" to ")[1].toInt()
+            val (moveNum, fromStack, toStack) = readLine(line)
 //            println("moving ${moveNum} crates from stack ${fromStack} to stack $toStack")
             for (i in 1..moveNum) {
                 crates.moveCrate(fromStack,toStack)
@@ -26,9 +31,7 @@ class Day05 : Day<String> {
 
     override fun part2(input: List<String>): String {
         input.filter{ it.isNotEmpty()}.forEach { line ->
-            val moveNum = line.split(FROM)[0].split(" ")[1].toInt()
-            val fromStack = line.split(FROM)[1].split(" to ")[0].toInt()
-            val toStack = line.split(FROM)[1].split(" to ")[1].toInt()
+            val (moveNum, fromStack, toStack) = readLine(line)
             crates.moveCrate(fromStack, toStack, moveNum)
         }
         return crates.getCratesOnTop()
