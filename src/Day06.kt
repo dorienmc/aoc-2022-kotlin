@@ -14,29 +14,13 @@ class Day06 : Day<Int> {
     }
 
     fun detectMarker(datastream: String, markerSize: Int): Int {
-        var count = 0
-        var recentChars = ""
-        for(char in datastream) {
-            if (recentChars.length >= markerSize && allCharsAreDifferent(recentChars)) {
-                println(recentChars + " " + count)
-                return count
+        val slices = datastream.windowed(markerSize)
+        for ((index, slice) in slices.withIndex()) {
+            if(slice.toSet().size == markerSize) {
+                return index + markerSize
             }
-            recentChars += char
-            if (recentChars.length > markerSize) {
-                recentChars = dropFirst(recentChars)
-            }
-            count++
         }
-        return count
-    }
-
-
-    fun allCharsAreDifferent(sequence: String) : Boolean {
-        return sequence.toSet().size == sequence.length
-    }
-
-    fun dropFirst(stream: String): String {
-        return stream.substring(1)
+        return 0
     }
 
     override fun part1(input: List<String>): Int {
