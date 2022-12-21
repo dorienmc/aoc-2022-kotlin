@@ -26,18 +26,22 @@ Consider your map; how many trees are visible from outside the grid?
 class Day08 : Day<Int> {
     override val index = 8
 
-    override fun part1(input: List<String>): Int {
+    fun readInput(input: List<String>) : Matrix {
         val gridSize = input[0].length
         val grid = Matrix(gridSize, gridSize)
-        val markingGrid = Matrix(gridSize, gridSize)
-
-        // Read input
         for( (i, line) in input.withIndex() ) {
             for ( (j, elem) in line.withIndex() ) {
                 grid.set(i,j, elem.digitToInt())
             }
         }
-        println(grid)
+        return grid
+    }
+
+    override fun part1(input: List<String>): Int {
+        val gridSize = input[0].length
+        val grid = readInput(input)
+        val markingGrid = Matrix(gridSize, gridSize)
+//        println(grid)
 
         // Check rows
         for( i in 0 until grid.rows) {
@@ -50,12 +54,10 @@ class Day08 : Day<Int> {
                     markingGrid.set(i,j,1)
                 }
             }
-        }
-//        println("Check left to right: \n$markingGrid")
+            //println("Check left to right: \n$markingGrid")
 
-        for( i in 0 until grid.rows) {
             // Right to left
-            var lowestVisibleTree = -1
+            lowestVisibleTree = -1
             val rowReversed = grid.getRow(i).reversed()
             for ((j, tree) in rowReversed.withIndex()) {
                 val jReversed = gridSize - j - 1
@@ -77,12 +79,10 @@ class Day08 : Day<Int> {
                     markingGrid.set(i,j,1)
                 }
             }
-        }
-//        println("Check up to down: \n$markingGrid")
+            //println("Check up to down: \n$markingGrid")
 
-        // Check down to up
-        for( j in 0 until grid.cols) {
-            var lowestVisibleTree = -1
+            // Check down to up
+            lowestVisibleTree = -1
             for (i in grid.rows - 1 downTo 0) {
                 val tree = grid.get(i,j)
                 if (tree > lowestVisibleTree) {
@@ -94,21 +94,77 @@ class Day08 : Day<Int> {
 //        println("Check down to up: \n$markingGrid")
 
         // Print no of visible trees
+        return (0 until grid.rows).sumOf { r -> markingGrid.getRow(r).sum() }
+    }
+
+    override fun part2(input: List<String>): Int {
+        println("Part 2")
+        val grid = readInput(input)
+
+        // Measure viewing distance
+        return (0 until grid.rows).flatMap { r -> (0 until grid.cols).map{ c -> scenicScore(r,c,grid) } }.max()
+//        for (r in 0 until grid.rows) {
+//            for(c in 0 until grid.cols) {
+//                println(scenicScore(r,c,grid))
+//            }
+//        }
+
+    }
+
+    fun lookUp(i: Int, j: Int, grid: Matrix): Int {
+        val tree = grid.get(i,j)
         var count = 0
-        for(i in 0 until grid.rows) {
-            for(j in 0 until grid.cols) {
-                count += markingGrid.get(i,j)
+        for(r in i-1 downTo 0){
+            count++
+            if(grid.get(r, j) >= tree) {
+                return count
             }
         }
-
         return count
     }
 
-
-
-    override fun part2(input: List<String>): Int {
-        return 0;
+    fun lookDown(i: Int, j: Int, grid: Matrix): Int {
+        val tree = grid.get(i,j)
+        var count = 0
+        for(r in i+1 until grid.rows){
+            count++
+            if(grid.get(r, j) >= tree) {
+                return count
+            }
+        }
+        return count
     }
+
+    fun lookLeft(i: Int, j: Int, grid: Matrix): Int {
+        val tree = grid.get(i,j)
+        var count = 0
+        for(c in j-1 downTo 0){
+            count++
+            if(grid.get(i, c) >= tree) {
+                return count
+            }
+        }
+        return count
+    }
+
+    fun lookRight(i: Int, j: Int, grid: Matrix): Int {
+        val tree = grid.get(i,j)
+        var count = 0
+        for(c in j+1 until grid.cols){
+            count++
+            if(grid.get(i, c) >= tree) {
+                return count
+            }
+        }
+        return count
+    }
+
+    fun scenicScore(i: Int, j: Int, grid: Matrix) : Int {
+        if (i == 0 || j == 0 || i == grid.rows - 1 || j == grid.cols - 1) return 0
+        return lookUp(i,j,grid) * lookDown(i,j,grid) * lookLeft(i,j,grid) * lookRight(i,j,grid)
+    }
+
+
 }
 
 
@@ -146,5 +202,7 @@ fun main() {
     val input = readInput(day.index)
     day.part1(input).println()
 //
-//    day.part2(input).println()
+    check(day.part2(testInput) == 8)
+    day.part2(input).println()
+
 }
