@@ -10,27 +10,21 @@ package com.dmc.advent2022
 class Day06 : Day<Int> {
     override val index = 6
 
-    fun detectStartOfPacketMarker(datastream: String): Int {
-        return detectMarker(datastream, 4)
-    }
-
-    fun detectMarker(datastream: String, markerSize: Int): Int {
-        val slices = datastream.windowed(markerSize)
-        for ((index, slice) in slices.withIndex()) {
-            if(slice.toSet().size == markerSize) {
-                return index + markerSize
-            }
-        }
-        return 0
-    }
-
     override fun part1(input: List<String>): Int {
-        return detectStartOfPacketMarker(input.get(0))
+        return input[0].detectMarker()
     }
 
     override fun part2(input: List<String>): Int {
-        return detectMarker(input.get(0),14)
+        return input[0].detectMarker(14)
     }
+}
+
+fun String.detectMarker(markerSize: Int = 4): Int {
+    return this
+        .windowed(markerSize)
+        .withIndex()
+        .first { (_, slice) -> slice.toSet().size == markerSize }
+        .index + markerSize
 }
 
 fun main() {
@@ -39,19 +33,19 @@ fun main() {
     // test if implementation meets criteria from the description, like:
     val testInput = readInput(day.index, true)
     check(day.part1(testInput) == 7)
-    check(day.detectStartOfPacketMarker("bvwbjplbgvbhsrlpgdmjqwftvncz") == 5)
-    check(day.detectStartOfPacketMarker("nppdvjthqldpwncqszvftbrmjlhg") == 6)
-    check(day.detectStartOfPacketMarker("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg") == 10)
-    check(day.detectStartOfPacketMarker("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw") == 11)
+    check("bvwbjplbgvbhsrlpgdmjqwftvncz".detectMarker() == 5)
+    check("nppdvjthqldpwncqszvftbrmjlhg".detectMarker() == 6)
+    check("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg".detectMarker() == 10)
+    check("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw".detectMarker() == 11)
 
     val input = readInput(day.index)
     day.part1(input).println()
 
-    check(day.detectMarker("mjqjpqmgbljsphdztnvjfqwrcgsmlb",14) == 19)
-    check(day.detectMarker("bvwbjplbgvbhsrlpgdmjqwftvncz",14) == 23)
-    check(day.detectMarker("nppdvjthqldpwncqszvftbrmjlhg",14) == 23)
-    check(day.detectMarker("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg",14) == 29)
-    check(day.detectMarker("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw",14) == 26)
+    check("mjqjpqmgbljsphdztnvjfqwrcgsmlb".detectMarker(14) == 19)
+    check("bvwbjplbgvbhsrlpgdmjqwftvncz".detectMarker(14) == 23)
+    check("nppdvjthqldpwncqszvftbrmjlhg".detectMarker(14) == 23)
+    check("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg".detectMarker(14) == 29)
+    check("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw".detectMarker(14) == 26)
 
     day.part2(input).println()
 }

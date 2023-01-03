@@ -5,11 +5,11 @@ class Day02 : Day<Int> {
     override val index = 2
 
     override fun part1(input: List<String>): Int {
-        return input.map{ calcScore1(it.split(" ")) }.sum()
+        return input.sumOf { calcScore1(it.split(" ")) }
     }
 
     override fun part2(input: List<String>): Int {
-        return input.map{ calcScore2(it.split(" ")) }.sum()
+        return input.sumOf { calcScore2(it.split(" ")) }
     }
 }
 enum class OutCome(val score: Int) {
@@ -48,24 +48,16 @@ enum class Shape(val score: Int, val vsRock: OutCome, val vsPaper: OutCome, val 
     }
 }
 
-fun getOpponentShape(input: String): Shape {
-    return when (input) {
-        "A" -> Shape.ROCK
-        "B" -> Shape.PAPER
+fun String.toShape(): Shape {
+    return when (this) {
+        "A","X" -> Shape.ROCK
+        "B","Y" -> Shape.PAPER
         else -> Shape.SCISSORS
     }
 }
 
-fun getYourShape(input: String): Shape {
-    return when (input) {
-        "X" -> Shape.ROCK
-        "Y" -> Shape.PAPER
-        else -> Shape.SCISSORS
-    }
-}
-
-fun getYourOutCome(input: String): OutCome {
-    return when (input) {
+fun String.toOutCome() : OutCome {
+    return when (this) {
         "X" -> OutCome.LOSE
         "Y" -> OutCome.DRAW
         else -> OutCome.WIN
@@ -74,7 +66,7 @@ fun getYourOutCome(input: String): OutCome {
 
 
 fun calcScore1(input: List<String>) : Int {
-    return calcScore1(getOpponentShape(input[0]),getYourShape(input[1]))
+    return calcScore1(input[0].toShape(),input[1].toShape())
 }
 
 fun calcScore1(opponent: Shape, myShape: Shape) : Int {
@@ -89,20 +81,15 @@ fun calcScore1(opponent: Shape, myShape: Shape) : Int {
 
 
 fun calcScore2(input: List<String>) : Int {
-    return calcScore2(getOpponentShape(input[0]),getYourOutCome(input[1]))
+    return calcScore2(input[0].toShape(),input[1].toOutCome())
 }
 
 fun calcScore2(opponent: Shape, expectedOutCome: OutCome) : Int {
     // Determine shape (note that Shape.getExpectedOutcome is the outcome for the opponent)
     val myShape = opponent.getExpectedOutcome(expectedOutCome.getOppositeOutcome())
 
-    // Shape score
-    val shapeScore = myShape.score
-    // Did I win?
-    val outcomeScore = myShape.outcome(opponent).score
-
     // Add it
-    return shapeScore + outcomeScore
+    return myShape.score + expectedOutCome.score
 }
 
 fun main() {

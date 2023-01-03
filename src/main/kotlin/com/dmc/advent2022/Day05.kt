@@ -9,35 +9,37 @@ class Day05 : Day<String> {
         crates = Crates(input.toMutableList())
     }
 
-    fun readLine(line: String) : Triple<Int, Int, Int> {
-        val (lsh, rhs) = line.split(" from ")
+    private fun String.parseInstruction() : Instruction {
+        val (lsh, rhs) = this.split(" from ")
         val (_,moveNum) = lsh.split(" ")
         val (fromS, toS) = rhs.split(" to ")
 
-        return Triple(moveNum.toInt(),fromS.toInt(),toS.toInt())
+        return Instruction(moveNum.toInt(),fromS.toInt(),toS.toInt())
     }
 
     override fun part1(input: List<String>): String {
-        input.filter{ it.isNotEmpty()}.forEach { line ->
-            val (moveNum, fromStack, toStack) = readLine(line)
-//            println("moving ${moveNum} crates from stack ${fromStack} to stack $toStack")
-            for (i in 1..moveNum) {
-                crates.moveCrate(fromStack,toStack)
-//                println(cratesEx.getCratesOnTop())
+        input
+            .filter{ it.isNotEmpty()}
+            .map{ it.parseInstruction() }
+            .forEach { (amount, source, target) ->
+                repeat(amount) {
+                    crates.moveCrate(source, target)
+                }
             }
-        }
 
         return crates.getCratesOnTop()
     }
 
     override fun part2(input: List<String>): String {
-        input.filter{ it.isNotEmpty()}.forEach { line ->
-            val (moveNum, fromStack, toStack) = readLine(line)
-            crates.moveCrate(fromStack, toStack, moveNum)
-        }
+        input.filter{ it.isNotEmpty()}.map{ it.parseInstruction()}
+            .forEach { (amount, source, target) ->
+                crates.moveCrate(source, target, amount)
+            }
         return crates.getCratesOnTop()
     }
 }
+
+data class Instruction(val amount: Int, val source: Int, val target: Int)
 
 class Crates(var crates: MutableList<String>) {
 
@@ -46,26 +48,20 @@ class Crates(var crates: MutableList<String>) {
         addCrates(stackTo, crate)
     }
 
-    fun popCrate(stackId: Int, n: Int = 1): String {
+    private fun popCrate(stackId: Int, n: Int = 1): String {
         val stack = crates[stackId - 1]
         val crate = stack.substring(stack.length - n)
         crates[stackId - 1] = stack.dropLast(n)
         return crate
     }
 
-    fun addCrates(stackId: Int, crate: String) {
+    private fun addCrates(stackId: Int, crate: String) {
         val stack = crates[stackId - 1]
         crates[stackId - 1] = stack.plus(crate)
     }
 
     fun getCratesOnTop() : String {
-        return crates.map {
-            if(it.isNotEmpty()) {
-                it.last()
-            } else {
-                ""
-            }
-        }.joinToString("")
+        return crates.mapNotNull { it.lastOrNull() }.joinToString("")
     }
 }
 

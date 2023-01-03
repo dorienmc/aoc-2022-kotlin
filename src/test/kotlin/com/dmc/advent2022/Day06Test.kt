@@ -45,7 +45,7 @@ internal class Day06Test {
             "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw, 14, 26"
         )
         fun `Should detect start of packet marker correctly`(packet: String, markerSize: Int, expected: Int) {
-            assertThat(day.detectMarker(packet,markerSize)).isEqualTo(expected)
+            assertThat(packet.detectMarker(markerSize)).isEqualTo(expected)
         }
 
     }
