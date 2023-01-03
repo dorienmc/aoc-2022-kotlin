@@ -1,4 +1,6 @@
 // --- Day X: ??? ---
+package com.dmc.advent2022
+
 interface Day<T> {
     val index: Int
 

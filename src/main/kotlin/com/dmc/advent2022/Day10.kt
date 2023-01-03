@@ -1,3 +1,4 @@
+package com.dmc.advent2022
 import kotlin.math.min
 
 //--- Day 10: Cathode-Ray Tube ---

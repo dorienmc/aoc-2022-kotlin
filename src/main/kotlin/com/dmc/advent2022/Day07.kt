@@ -1,3 +1,5 @@
+package com.dmc.advent2022
+
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 

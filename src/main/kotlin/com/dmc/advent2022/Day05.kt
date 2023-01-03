@@ -1,4 +1,5 @@
 // --- Day 5: Supply Stacks ---
+package com.dmc.advent2022
 
 class Day05 : Day<String> {
     override val index = 5

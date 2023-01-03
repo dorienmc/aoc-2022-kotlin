@@ -1,3 +1,4 @@
+package com.dmc.advent2022
 
 //--- Day 11: Monkey in the Middle ---
 class Day11 {
@@ -24,10 +25,10 @@ class Day11 {
         )
     }
 
-    fun playRound(monkeys : List<Monkey>, worryDivision: Int = 3){
+    fun playRound(monkeys : List<Monkey>, worryDivision: Int = 3, worryModulo: Int){
         for (monkey in monkeys) {
 //        println("-----\nTurn of $monkey")
-            val thrownItems = monkey.turn(worryDivision)
+            val thrownItems = monkey.turn(worryDivision, worryModulo)
 
             for(entry in thrownItems) {
                 val item = entry.first
@@ -46,10 +47,10 @@ class Day11 {
             .reduce{ a,b -> a * b }
     }
 
-    fun part1(allMonkeys: List<Monkey>): Long {
+    fun part1(allMonkeys: List<Monkey>, worryModulo: Int): Long {
         for(r in 1 .. 20) {
 //            println("---\nRound $r")
-            playRound(allMonkeys)
+            playRound(allMonkeys, worryModulo = worryModulo)
 //            allMonkeys.forEach{ m -> println("$m: ${m.items} ")}
         }
 
@@ -57,10 +58,10 @@ class Day11 {
         return getMonkeyBusiness(allMonkeys)
     }
 
-    fun part2(allMonkeys: List<Monkey>, numRounds : Int = 10000): Long {
+    fun part2(allMonkeys: List<Monkey>, numRounds : Int = 10000, worryModulo: Int): Long {
         for(r in 1 .. numRounds) {
 //            println("---\nRound $r")
-            playRound(allMonkeys, 1)
+            playRound(allMonkeys, worryDivision = 1, worryModulo = worryModulo)
 //            allMonkeys.forEach{ m -> println("$m: ${m.items} ")}
         }
 
@@ -81,7 +82,7 @@ class Monkey(val id: Int, val items: MutableList<Int>, val operation: (Int) -> I
         return operation.invoke(item)
     }
 
-    fun turn(worryDivision : Int = 3): List<Pair<Int,Int>> {
+    fun turn(worryDivision : Int = 3, worryModulo: Int): List<Pair<Int,Int>> {
         //On a single monkey's turn,
         //it inspects and throws all of the items it is holding one at a time and in the order listed.
         val thrownItems = mutableListOf<Pair<Int,Int>>()
@@ -94,6 +95,7 @@ class Monkey(val id: Int, val items: MutableList<Int>, val operation: (Int) -> I
                 worryLevel /= worryDivision
 //            println("Monkey bored: $worryLevel")
             }
+            worryLevel = worryLevel.mod(worryModulo)
             //throw
             val nextMonkey = test.invoke(worryLevel)
 //            println("Throw to $nextMonkey")
@@ -125,12 +127,10 @@ fun main() {
     val day = Day11()
 
     // test if implementation meets criteria from the description, like:
-    val testInput = day.createTestMonkeys()//readInput(day.index, true)
-    check(day.part1(testInput) == 10605L)
+    check(day.part1(day.createTestMonkeys(), worryModulo = 23*19*13*17) == 10605L)
 
-    val input = day.createMonkeys()//readInput(day.index)
-    day.part1(input).println()
+    day.part1(day.createMonkeys(), worryModulo = 13*3*7*2*19*5*11*17).println()
     
-    day.part2(testInput, 20).println()
+    day.part2(day.createTestMonkeys(), 1000, worryModulo = 23*19*13*17).println()
 //    day.part2(input).println()
 }

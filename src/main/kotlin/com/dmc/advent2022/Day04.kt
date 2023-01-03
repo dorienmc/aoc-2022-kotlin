@@ -1,4 +1,5 @@
 // --- Day 4: Camp Cleanup ---
+package com.dmc.advent2022
 
 class Day04 : Day<Int> {
     override val index = 4

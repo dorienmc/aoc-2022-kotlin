@@ -1,4 +1,5 @@
 // --- Day 1: Calorie Counting ---
+package com.dmc.advent2022
 
 class Day01 : Day<Int> {
     override val index = 1

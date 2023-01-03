@@ -1,3 +1,5 @@
+package com.dmc.advent2022
+
 import java.lang.Math.abs
 
 //--- Day 9: Rope Bridge ---
@@ -141,7 +143,7 @@ fun main() {
     val input = readInput(day.index)
     day.part1(input).println()
 
-    val testInput2 = readInput("Day09_test2")
+    val testInput2 = readInput("Day09_test2","src/test/resources")
     check(day.part2(testInput2) == 36)
     day.part2(input).println()
 

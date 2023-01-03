@@ -1,4 +1,5 @@
 // --- Day 2: Rock Paper Scissors ---
+package com.dmc.advent2022
 
 class Day02 : Day<Int> {
     override val index = 2

@@ -5,6 +5,7 @@ that detects a start-of-packet marker in the datastream. In the protocol
 being used by the Elves, the start of a packet is indicated by a sequence
 of four characters that are all different.
  */
+package com.dmc.advent2022
 
 class Day06 : Day<Int> {
     override val index = 6

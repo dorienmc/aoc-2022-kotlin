@@ -23,6 +23,8 @@ With 16 trees visible on the edge and another 5 visible in the interior, a total
 
 Consider your map; how many trees are visible from outside the grid?
  */
+package com.dmc.advent2022
+
 class Day08 : Day<Int> {
     override val index = 8
 

@@ -1,4 +1,6 @@
 //--- Day 3: Rucksack Reorganization ---
+package com.dmc.advent2022
+
 class Day03 : Day<Int> {
     override val index = 3
 
