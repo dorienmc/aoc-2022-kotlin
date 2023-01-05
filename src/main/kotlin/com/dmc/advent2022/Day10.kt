@@ -1,82 +1,58 @@
 package com.dmc.advent2022
-import kotlin.math.min
 
 //--- Day 10: Cathode-Ray Tube ---
 class Day10 : Day<Int> {
     override val index = 10
 
-    override fun part1(input: List<String>): Int {
-        var cycleCount = 1
-        val xValues = mutableMapOf(1 to 1)
-        var x = 1
-
-        for(line in input) {
-            xValues[cycleCount + 1] = x
-            if (line == "noop") {
-                cycleCount += 1
-            } else {
-                val addx = line.split(" ")[1].toInt()
-                xValues[cycleCount + 2] = x + addx
-                cycleCount += 2
-                x += addx
+    fun parseInput(input: List<String>) : List<Int> =
+        buildList {
+            add(1) // start value
+            input.forEach{ line ->
+                when {
+                    line.startsWith("noop") -> { add(0) }
+                    line.startsWith("addx") -> {
+                        add(0) // First cycle there is no change
+                        add(line.substringAfter(" ").toInt()) // Second cycle the change is done
+                    }
+                    else -> { /*nothing*/ }
+                }
             }
-//            println("cycle ${cycleCount}, x: $x")
         }
 
-        for(i in 20..cycleCount step 40) {
-            println("cycle ${i}, x: ${xValues[i]}, signal strength: ${i * xValues.getOrDefault(i,0)}")
-        }
-        return (20..cycleCount step 40).sumOf { i -> i * xValues.getOrDefault(i, 0) }
+    override fun part1(input: List<String>): Int {
+        val parsedInput = parseInput(input)
+        val signals = parsedInput.runningReduce(Int::plus)
+
+        return signals.signalStrengths(20,40).sum()
     }
+
+    fun part2AsString(input: List<String>): String {
+        val parsedInput = parseInput(input)
+        val signals = parsedInput.runningReduce(Int::plus)
+
+        val pixels = signals.toPixels().map{ if(it) "#" else "."}.joinToString("")
+
+        return pixels.drawGrid(40)
+    }
+
+    private fun String.drawGrid(width: Int) : String =
+        this.windowed(width, width, false).joinToString(separator = "\n")
 
     override fun part2(input: List<String>): Int {
-        var cycleCount = 1
-        val xValues = mutableMapOf(1 to 1)
-        var pixels = "#"
-        var x = 1
-
-        for(line in input) {
-            xValues[cycleCount + 1] = x
-            pixels += drawPixel(cycleCount + 1, x)
-//            println("cycle ${cycleCount + 1}, x: $x, pixel: ${pixels.last()}")
-
-            if (line == "noop") {
-                cycleCount += 1
-            } else {
-                val addx = line.split(" ")[1].toInt()
-                xValues[cycleCount + 2] = x + addx
-                pixels += drawPixel(cycleCount + 2, x + addx)
-//                println("cycle ${cycleCount + 2}, x: ${x+addx}, pixel: ${pixels.last()}")
-                cycleCount += 2
-                x += addx
-            }
-
-//            println("cycle ${cycleCount}, x: $x")
-        }
-
-        for(i in 0..5) {
-            val s = i*40
-            val e = min(pixels.length - 1, (i*40)+39)
-            println(pixels.substring(s,e))
-        }
-
+        // Not implemented
         return 0
-    }
-
-    fun drawPixel(cycleCount: Int, xval: Int): String {
-        return when((cycleCount - 1) % 40) {
-            in (xval-1 .. xval+1) -> "#"
-            else -> "."
-        }
     }
 }
 
+fun List<Int>.signalStrengths(start: Int, stepSize: Int): List<Int> =
+    (start..this.size step stepSize).map { cycle -> cycle * this[cycle - 1] }
+
+fun List<Int>.toPixels(): List<Boolean> =
+    this.mapIndexed { index, signal -> (index % 40) in (signal-1..signal+1) }
+
+
 fun main() {
     val day = Day10()
-
-    // test if implementation meets criteria from the description, like:
-//    val testInput1 = listOf("noop", "addx 3", "addx -5")
-//    day.part1(testInput1)
 
     val testInput = readInput(day.index, true)
     check(day.part1(testInput) == 13140)
@@ -84,7 +60,7 @@ fun main() {
     val input = readInput(day.index)
     day.part1(input).println()
 
-    day.part2(testInput)
-    day.part2(input).println()
+    day.part2AsString(testInput).println()
+    day.part2AsString(input).println()
 
 }

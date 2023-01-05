@@ -1,134 +1,92 @@
 package com.dmc.advent2022
 
-import java.lang.Math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 //--- Day 9: Rope Bridge ---
 class Day09 : Day<Int> {
     override val index = 9
 
     override fun part1(input: List<String>): Int {
-        var posH = Position(0,0)
-        var posT = Position(0,0)
-        val tailPositions = mutableListOf(posT)
+        var head = Point()
+        var tail = Point()
+        val tailPositions = mutableSetOf(Point())
 
         for (line in input) {
-            val direction = line.split(" ")[0]
-            val num = line.split(" ")[1].toInt()
-//            println("== $direction $num ==")
+            val (direction, num) = line.split(" ")
 
             // Move head and tail
-            for(i in 1..num) {
-                posH = posH.go(direction)
-//                println("H $posH, T $posT")
-                if (!posH.isTouching(posT)) {
-                    posT = moveCloser(posH, posT)
-
-                    // Store tail position
-                    tailPositions.add(posT)
+            repeat(num.toInt()) {
+                head = head.move(direction)
+                if (!head.touches(tail)) {
+                    tail = tail.moveTowards(head)
                 }
-//                println("H $posH, T $posT")
-                check(posH.isTouching(posT))
+                tailPositions += tail
+            }
+        }
+
+        return tailPositions.size
+    }
+
+    override fun part2(input: List<String>): Int {
+        val rope = (0..9).map{ Point()}.toMutableList()
+        val tailPositions = mutableListOf(rope.last())
+
+        for (line in input) {
+            val (direction, num) = line.split(" ")
+
+            // Move head, knots and tail
+            repeat(num.toInt()) {
+                // Move head
+                rope[0] =  rope[0].move(direction)
+
+                // Move the rest
+                rope.indices.windowed(2){ (prev, current) ->
+                    val prevKnot = rope.get(prev)
+                    var knot = rope.get(current)
+                    if (!knot.touches(prevKnot)) {
+                        knot = knot.moveTowards(prevKnot)
+                    }
+                    check(knot.touches(prevKnot))
+                    rope[current] = knot
+                }
+                // Store tail position
+                tailPositions += rope.last()
             }
         }
 //        println(tailPositions)
 
         return tailPositions.toSet().size
     }
-
-    private fun moveCloser(head : Position, tail: Position): Position {
-        val diffX = head.x - tail.x
-        val diffY = head.y - tail.y
-
-        val moveX = when {
-            diffX <= -1 -> -1
-            diffX >= 1 -> 1
-            else -> 0
-        }
-        val moveY = when {
-            diffY <= -1 -> -1
-            diffY >= 1 -> 1
-            else -> 0
-        }
-//        println("$moveX $moveY")
-
-        return tail.plus(moveX, moveY)
-    }
-
-    override fun part2(input: List<String>): Int {
-        val pos = (0..9).map{ Position(0,0)}.toMutableList()
-        val tailPositions = mutableListOf(pos.last())
-
-        for (line in input) {
-            val direction = line.split(" ")[0]
-            val num = line.split(" ")[1].toInt()
-
-            // Move head, knots and tail
-            for(i in 1..num) {
-                val posH = pos.get(0)
-                pos[0] = posH.go(direction)
-
-                for (j in 1..9) {
-                    val prevKnot = pos.get(j - 1)
-                    var knot = pos.get(j)
-
-                    if (!knot.isTouching(prevKnot)) {
-                        knot = moveCloser(prevKnot, knot)
-
-                        // Store tail position
-                        if (j == 9) {
-                            tailPositions.add(knot)
-                        }
-                    }
-                    check(knot.isTouching(prevKnot))
-                    pos[j] = knot
-                }
-            }
-        }
-        println(tailPositions)
-
-        return tailPositions.toSet().size
-    }
 }
 
-data class Position(var x: Int, var y: Int) {
+data class Point(val x: Int = 0, val y: Int = 0) {
     // y |
     //   |___
     //       x
 
-    fun go(direction: String): Position {
-        return when(direction) {
-            "U" -> this.plus(0,1)
-            "D" -> this.plus(0,-1)
-            "R" -> this.plus(1,0)
-            "L" -> this.plus(- 1, 0)
-            else -> return this
+    fun move(direction: String): Point =
+        when(direction) {
+            "U" -> copy(y = y + 1)
+            "D" -> copy(y = y - 1)
+            "R" -> copy(x= x + 1)
+            "L" -> copy(x = x - 1)
+            else -> this
         }
-    }
 
-    fun plus(i: Int, j:Int) : Position {
-        return Position(this.x + i, this.y + j)
-    }
-
-    fun isTouching(other: Position): Boolean {
+    fun touches(other: Point): Boolean {
         // diagonally adjacent and even overlapping both count as touching
-        val diffX = abs(this.x - other.x)
-        val diffY = abs(this.y - other.y)
+        val diffX = (x - other.x).absoluteValue
+        val diffY = (y - other.y).absoluteValue
         return diffX <= 1 && diffY <= 1
+    }
+
+    fun moveTowards(other: Point) : Point {
+        return Point(x + (other.x - x).sign, y + (other.y - y).sign)
     }
 
     override fun toString(): String {
         return "($x, $y)"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (other is Position) {
-            return this.x == other.x && this.y == other.y
-        }
-        return super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
     }
 }
 
