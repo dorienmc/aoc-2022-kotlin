@@ -1,125 +1,103 @@
 package com.dmc.advent2022
 
 //--- Day 11: Monkey in the Middle ---
-class Day11 {
-    val index = 11
+class Day11 : Day<Long> {
+    override val index = 11
 
-    fun createTestMonkeys(): List<Monkey> {
-        val m0 = Monkey(0, mutableListOf(79,98), { a -> a * 19 }, { a -> if (a % 23 ==0) 2 else 3 })
-        val m1 = Monkey(1, mutableListOf(54,65,75,74), { a -> a + 6 }, { a -> if (a % 19 == 0) 2 else 0})
-        val m2 = Monkey(2, mutableListOf(79, 60, 97), { a -> a * a }, { a -> if (a % 13 == 0) 1 else 3})
-        val m3 = Monkey(3, mutableListOf(74), { a -> a + 3 }, { a -> if (a % 17 == 0) 0 else 1})
-        return listOf(m0, m1, m2, m3)
-    }
+    override fun part1(input: List<String>): Long {
+        val monkeys: List<Monkey> = input.chunked(7).map { Monkey.of(it) }
 
-    fun createMonkeys(): List<Monkey> {
-        return listOf(
-            Monkey(0, mutableListOf(89, 73, 66, 57, 64, 80), { a -> a * 3}, { a -> if (a % 13 == 0) 6 else 2}),
-            Monkey(1, mutableListOf(83, 78, 81, 55, 81, 59, 69), { a -> a + 1}, { a -> if (a % 3 == 0) 7 else 4}),
-            Monkey(2, mutableListOf(76, 91, 58, 85), { a -> a * 13}, { a -> if (a % 7 == 0) 1 else 4}),
-            Monkey(3, mutableListOf(71, 72, 74, 76, 68), { a -> a * a }, { a -> if (a % 2 == 0) 6 else 0}),
-            Monkey(4, mutableListOf(98, 85, 84), { a -> a + 7}, { a -> if (a % 19 == 0) 5 else 7}),
-            Monkey(5, mutableListOf(78), { a -> a + 8}, { a -> if (a % 5 == 0) 3 else 0}),
-            Monkey(6, mutableListOf(86, 70, 60, 88, 88, 78, 74, 83), { a -> a + 4}, { a -> if (a % 11 == 0) 1 else 2}),
-            Monkey(7, mutableListOf(81, 58), { a -> a + 5}, { a -> if (a % 17 == 0) 3 else 5})
-        )
-    }
-
-    fun playRound(monkeys : List<Monkey>, worryDivision: Int = 3, worryModulo: Int){
-        for (monkey in monkeys) {
-//        println("-----\nTurn of $monkey")
-            val thrownItems = monkey.turn(worryDivision, worryModulo)
-
-            for(entry in thrownItems) {
-                val item = entry.first
-                val otherMonkey = monkeys[entry.second]
-                otherMonkey.catchItem(item)
-//            println("Monkey ${entry.second} caught item $item")
-            }
+        repeat(20) {
+            monkeys.play{ it / 3 }
         }
+        monkeys.forEach{ m -> println("$m inspected items ${m.numInspectedItems} times")}
+        return monkeys.business()
+
     }
 
-    private fun getMonkeyBusiness(monkeys: List<Monkey>) : Long {
-        return monkeys
-            .sortedByDescending { it.numInspectedItems }
-            .take(2)
-            .map { it.numInspectedItems.toLong() }
-            .reduce{ a,b -> a * b }
-    }
+    override fun part2(input: List<String>): Long {
+        val monkeys: List<Monkey> = input.chunked(7).map { Monkey.of(it) }
+        val monkeyMod = monkeys.map { it.test }.product()
 
-    fun part1(allMonkeys: List<Monkey>, worryModulo: Int): Long {
-        for(r in 1 .. 20) {
-//            println("---\nRound $r")
-            playRound(allMonkeys, worryModulo = worryModulo)
-//            allMonkeys.forEach{ m -> println("$m: ${m.items} ")}
+        repeat(10_000) {
+            monkeys.play{ it % monkeyMod }
         }
-
-        allMonkeys.forEach{ m -> println("$m inspected items ${m.numInspectedItems} times")}
-        return getMonkeyBusiness(allMonkeys)
-    }
-
-    fun part2(allMonkeys: List<Monkey>, numRounds : Int = 10000, worryModulo: Int): Long {
-        for(r in 1 .. numRounds) {
-//            println("---\nRound $r")
-            playRound(allMonkeys, worryDivision = 1, worryModulo = worryModulo)
-//            allMonkeys.forEach{ m -> println("$m: ${m.items} ")}
-        }
-
-        allMonkeys.forEach{ m -> println("$m inspected items ${m.numInspectedItems} times")}
-        return getMonkeyBusiness(allMonkeys)
+        monkeys.forEach{ m -> println("$m inspected items ${m.numInspectedItems} times")}
+        return monkeys.business()
     }
 }
 
-class Monkey(val id: Int, val items: MutableList<Int>, val operation: (Int) -> Int, val test: (Int) -> Int) {
-    var numInspectedItems = 0
+fun List<Monkey>.business() : Long =
+    this
+    .sortedByDescending { it.numInspectedItems }
+    .take(2)
+    .map { it.numInspectedItems }
+    .reduce{ a,b -> a * b }
 
-    private fun inspect(): Int {
-        numInspectedItems++
-        // Monkey takes left most item and inspects it
-        val item = items.first()
-        items.removeAt(0)
-        // Update worry level using 'operation'
-        return operation.invoke(item)
+fun List<Monkey>.play(changeToWorryLevel: (Long) -> Long) {
+    this.forEach { monkey ->
+        val thrownItems = monkey.turn(changeToWorryLevel)
+
+        for(entry in thrownItems) {
+            val item = entry.first
+            val otherMonkey : Monkey = this[entry.second]
+            otherMonkey.catchItem(item)
+        }
+    }
+}
+
+class Monkey(
+    val id: Int,
+    val items: MutableList<Long>,
+    val operation: (Long) -> Long,
+    val test: Long,
+    val trueMonkey: Int,
+    val falseMonkey: Int
+    ) {
+
+    var numInspectedItems: Long = 0L
+
+    companion object {
+        fun of(input: List<String>): Monkey {
+            val id = input[0].substringAfter(" ").substringBefore(":").toInt()
+            val items = input[1].substringAfter(":").split(",").map{ it.trim().toLong() }.toMutableList()
+            val operationFunction = input[2].substringAfter("new = ")
+            val operationVal = input[2].substringAfterLast(" ")
+            val operation: (Long) -> Long = when {
+                operationFunction == "old * old" -> ({it * it})
+                "+" in operationFunction -> ({it + operationVal.toLong()})
+                operationFunction.contains("*") -> ({it * operationVal.toLong()})
+                else -> ({it})
+            }
+            val test = input[3].substringAfter("by ").toLong()
+            val trueMonkey = input[4].substringAfterLast(" ").toInt()
+            val falseMonkey = input[5].substringAfterLast(" ").toInt()
+            return Monkey(id, items, operation, test, trueMonkey, falseMonkey)
+        }
     }
 
-    fun turn(worryDivision : Int = 3, worryModulo: Int): List<Pair<Int,Int>> {
+    fun turn(changeToWorryLevel: (Long) -> Long): List<Pair<Long,Int>> {
         //On a single monkey's turn,
         //it inspects and throws all of the items it is holding one at a time and in the order listed.
-        val thrownItems = mutableListOf<Pair<Int,Int>>()
-        while (items.isNotEmpty()) {
+        val thrownItems = mutableListOf<Pair<Long,Int>>()
+        for(item in items) {
             //inspect
-            var worryLevel = inspect()
-//            println("Inspect: $worryLevel")
-            //monkey gets bored
-            if (worryDivision > 1) {
-                worryLevel /= worryDivision
-//            println("Monkey bored: $worryLevel")
-            }
-            worryLevel = worryLevel.mod(worryModulo)
-            //throw
-            val nextMonkey = test.invoke(worryLevel)
-//            println("Throw to $nextMonkey")
-            thrownItems.add(worryLevel to nextMonkey)
+            val worry = changeToWorryLevel(operation(item))
+            val targetMonkey = if (worry % test == 0L) trueMonkey else falseMonkey
+            thrownItems.add(worry to targetMonkey)
         }
+        numInspectedItems += items.size
+        items.clear()
         return thrownItems
     }
 
-    fun catchItem(item: Int) {
+    fun catchItem(item: Long) {
         items.add(item)
     }
 
     override fun toString(): String {
-        return "monkey $id"
+        return "monkey $id: ${items.joinToString(",")}"
     }
-
-    /*
-    Monkey 0:
-  Starting items: 79, 98
-  Operation: new = old * 19
-  Test: divisible by 23
-    If true: throw to monkey 2
-    If false: throw to monkey 3
-     */
 }
 
 
@@ -127,10 +105,12 @@ fun main() {
     val day = Day11()
 
     // test if implementation meets criteria from the description, like:
-    check(day.part1(day.createTestMonkeys(), worryModulo = 23*19*13*17) == 10605L)
+    val testInput = readInput(day.index, true)
+    check(day.part1(testInput) == 10605L)
 
-    day.part1(day.createMonkeys(), worryModulo = 13*3*7*2*19*5*11*17).println()
+    val input = readInput(day.index)
+    day.part1(input).println()
     
-    day.part2(day.createTestMonkeys(), 1000, worryModulo = 23*19*13*17).println()
-//    day.part2(input).println()
+    day.part2(testInput).println()
+    day.part2(input).println()
 }

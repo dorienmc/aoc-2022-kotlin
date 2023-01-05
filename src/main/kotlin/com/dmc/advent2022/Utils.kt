@@ -44,3 +44,8 @@ inline fun <T> Iterable<T>.takeUntil(predicate: (T) -> Boolean): List<T> {
  * Return the product of a list of ints
  */
 fun Iterable<Int>.product(): Int = reduce{ a,b -> a * b }
+
+/**
+ * Return the product of a list of longs
+ */
+fun Iterable<Long>.product(): Long = reduce{ a,b -> a * b }
