@@ -24,7 +24,7 @@ internal class Day07Test {
     }
 
     @Nested
-    @DisplayName("Example")
+    @DisplayName("Test sizes")
     inner class Example {
         val root = Directory("/")
         val dirA = Directory("a")
@@ -43,19 +43,19 @@ internal class Day07Test {
 
         @BeforeEach
         fun setup() {
-            dirE.addChild(fileI)
-            dirA.addChild(dirE)
-            dirA.addChild(fileF)
-            dirA.addChild(fileG)
-            dirA.addChild(fileH)
-            dirD.addChild(fileJ)
-            dirD.addChild(fileDlog)
-            dirD.addChild(fileDext)
-            dirD.addChild(fileK)
-            root.addChild(dirA)
-            root.addChild(fileB)
-            root.addChild(fileC)
-            root.addChild(dirD)
+            dirE.addFile(fileI)
+            dirA.addSubdir(dirE)
+            dirA.addFile(fileF)
+            dirA.addFile(fileG)
+            dirA.addFile(fileH)
+            dirD.addFile(fileJ)
+            dirD.addFile(fileDlog)
+            dirD.addFile(fileDext)
+            dirD.addFile(fileK)
+            root.addSubdir(dirA)
+            root.addFile(fileB)
+            root.addFile(fileC)
+            root.addSubdir(dirD)
         }
 
         @Test
@@ -76,6 +76,18 @@ internal class Day07Test {
         @Test
         fun `Root directory`() {
             assertThat(root.getSize()).isEqualTo(48381165)
+        }
+
+        @Test
+        fun `parseInput should work`() {
+            val dirs = day.parseInput(testInput)
+            val expectedValues = mapOf("/" to 48381165, "a" to 94853, "d" to 24933642, "e" to 584)
+
+            assertThat(dirs.size).isEqualTo(4)
+            for (dir in dirs) {
+                assertThat(dir.name).isIn(expectedValues.keys)
+                assertThat(dir.getSize()).isEqualTo(expectedValues.get(dir.name))
+            }
         }
     }
 

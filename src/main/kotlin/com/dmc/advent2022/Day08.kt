@@ -28,145 +28,93 @@ package com.dmc.advent2022
 class Day08 : Day<Int> {
     override val index = 8
 
-    fun readInput(input: List<String>) : Matrix {
-        val gridSize = input[0].length
-        val grid = Matrix(gridSize, gridSize)
-        for( (i, line) in input.withIndex() ) {
-            for ( (j, elem) in line.withIndex() ) {
-                grid.set(i,j, elem.digitToInt())
-            }
-        }
-        return grid
-    }
-
     override fun part1(input: List<String>): Int {
-        val gridSize = input[0].length
-        val grid = readInput(input)
-        val markingGrid = Matrix(gridSize, gridSize)
-//        println(grid)
+        val grid = input.toMatrix()
 
-        // Check rows
-        for( i in 0 until grid.rows) {
-            // Left to right
-            val rowOfTrees = grid.getRow(i)
-            var lowestVisibleTree = -1
-            for ((j, tree) in rowOfTrees.withIndex()) {
-                if (tree > lowestVisibleTree) {
-                    lowestVisibleTree = tree
-                    markingGrid.set(i,j,1)
-                }
-            }
-            //println("Check left to right: \n$markingGrid")
-
-            // Right to left
-            lowestVisibleTree = -1
-            val rowReversed = grid.getRow(i).reversed()
-            for ((j, tree) in rowReversed.withIndex()) {
-                val jReversed = gridSize - j - 1
-                if (tree > lowestVisibleTree) {
-                    lowestVisibleTree = tree
-                    markingGrid.set(i,jReversed,1)
-                }
+        return (0 until grid.rows).sumOf { i ->
+            (0 until grid.cols).count { j ->
+                grid.isVisible(i,j)
             }
         }
-//        println("Check right to left: \n$markingGrid")
-
-        // Check up to down
-        for( j in 0 until grid.cols) {
-            var lowestVisibleTree = -1
-            for (i in 0 until grid.rows) {
-                val tree = grid.get(i,j)
-                if (tree > lowestVisibleTree) {
-                    lowestVisibleTree = tree
-                    markingGrid.set(i,j,1)
-                }
-            }
-            //println("Check up to down: \n$markingGrid")
-
-            // Check down to up
-            lowestVisibleTree = -1
-            for (i in grid.rows - 1 downTo 0) {
-                val tree = grid.get(i,j)
-                if (tree > lowestVisibleTree) {
-                    lowestVisibleTree = tree
-                    markingGrid.set(i,j,1)
-                }
-            }
-        }
-//        println("Check down to up: \n$markingGrid")
-
-        // Print no of visible trees
-        return (0 until grid.rows).sumOf { r -> markingGrid.getRow(r).sum() }
     }
 
     override fun part2(input: List<String>): Int {
         println("Part 2")
-        val grid = readInput(input)
+        val grid = input.toMatrix()
 
         // Measure viewing distance
-        return (0 until grid.rows).flatMap { r -> (0 until grid.cols).map{ c -> scenicScore(r,c,grid) } }.max()
-//        for (r in 0 until grid.rows) {
-//            for(c in 0 until grid.cols) {
-//                println(scenicScore(r,c,grid))
-//            }
-//        }
-
-    }
-
-    fun lookUp(i: Int, j: Int, grid: Matrix): Int {
-        val tree = grid.get(i,j)
-        var count = 0
-        for(r in i-1 downTo 0){
-            count++
-            if(grid.get(r, j) >= tree) {
-                return count
-            }
-        }
-        return count
-    }
-
-    fun lookDown(i: Int, j: Int, grid: Matrix): Int {
-        val tree = grid.get(i,j)
-        var count = 0
-        for(r in i+1 until grid.rows){
-            count++
-            if(grid.get(r, j) >= tree) {
-                return count
-            }
-        }
-        return count
-    }
-
-    fun lookLeft(i: Int, j: Int, grid: Matrix): Int {
-        val tree = grid.get(i,j)
-        var count = 0
-        for(c in j-1 downTo 0){
-            count++
-            if(grid.get(i, c) >= tree) {
-                return count
-            }
-        }
-        return count
-    }
-
-    fun lookRight(i: Int, j: Int, grid: Matrix): Int {
-        val tree = grid.get(i,j)
-        var count = 0
-        for(c in j+1 until grid.cols){
-            count++
-            if(grid.get(i, c) >= tree) {
-                return count
-            }
-        }
-        return count
+        return (0 until grid.rows).maxOf { r -> (0 until grid.cols).maxOf{ c -> grid.scenicScore(r,c) } }
     }
 
     fun scenicScore(i: Int, j: Int, grid: Matrix) : Int {
         if (i == 0 || j == 0 || i == grid.rows - 1 || j == grid.cols - 1) return 0
-        return lookUp(i,j,grid) * lookDown(i,j,grid) * lookLeft(i,j,grid) * lookRight(i,j,grid)
+        return grid.lookUp(i,j) * grid.lookDown(i,j) * grid.lookLeft(i,j) * grid.lookRight(i,j)
     }
 
+}
 
+fun List<String>.toMatrix() : Matrix {
+    val gridSize = this[0].length
+    val grid = Matrix(gridSize, gridSize)
+    for( (i, line) in this.withIndex() ) {
+        for ( (j, elem) in line.withIndex() ) {
+            grid.set(i,j, elem.digitToInt())
+        }
+    }
+    return grid
+}
+
+fun Matrix.viewFrom(i: Int, j: Int): List<List<Int>> {
+    //Return all trees that are in the row/column as this tree
+    //Note that some might not be visible
+    return listOf(
+        (j-1 downTo 0).map{ c -> this.get(i,c)}, // left
+        (i-1 downTo  0).map{ r -> this.get(r,j) }, // up
+        (j+1 until this.cols).map{ c -> this.get(i,c) }, //right
+        (i+1 until this.rows).map{ r -> this.get(r,j) }, //down
+    )
+}
+
+fun Matrix.isVisible(i: Int, j: Int) : Boolean {
+    return viewFrom(i,j).any { direction ->
+        direction.all{ tree -> tree < this.get(i,j) }
+    }
+}
+
+fun Matrix.scenicScore(i: Int, j: Int): Int {
+    return viewFrom(i,j).map { direction ->
+        direction.takeUntil { it >= this.get(i,j) }.count()
+    }.product()
+}
+
+fun Matrix.look(iRange: IntProgression, jRange: IntProgression, tree: Int) : Int {
+    // Return number of trees that can be seen from here (and are shorter that this tree)
+    var count = 0
+    for (i in iRange) {
+        for (j in jRange) {
+            count++
+            if (this.get(i,j) >= tree) {
+                return count
+            }
+        }
+    }
+    return count
+}
+
+fun Matrix.lookDown(i: Int, j: Int) : Int {
+    return this.look(i+1 until this.rows, j..j, this.get(i,j))
+}
+
+fun Matrix.lookUp(i: Int, j: Int) : Int {
+    return this.look(i-1 downTo 0, j..j, this.get(i,j))
+}
+
+fun Matrix.lookLeft(i: Int, j: Int): Int {
+    return this.look(i..i, j-1 downTo 0, this.get(i,j))
+}
+
+fun Matrix.lookRight(i: Int, j: Int): Int {
+    return this.look(i..i, j+1 until this.cols, this.get(i,j))
 }
 
 
@@ -185,12 +133,12 @@ class Matrix(var rows: Int, var cols: Int) {
         return matrix[row][col]
     }
 
-    fun getRow(row: Int): IntArray {
-        return matrix[row]
+    fun getRow(row: Int, jRange: IntProgression = 0 until cols): IntArray {
+        return jRange.map{ j -> get(row, j) }.toIntArray()
     }
 
-    fun getCol(col: Int): IntArray {
-        return matrix.map { row -> row[col] }.toIntArray()
+    fun getCol(col: Int, iRange: IntProgression = 0 until rows): IntArray {
+        return iRange.map{ i -> get(i, col) }.toIntArray()
     }
 }
 
