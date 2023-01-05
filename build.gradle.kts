@@ -45,7 +45,7 @@ tasks {
             }
             val newDayNum = String.format("%02d", prevDayNum + 1)
             println("Generating files for day $newDayNum")
-            File("$projectDir/src/test/resources","Day${newDayNum}_test.txt").writeText("")
+            File("$projectDir/src/test/resources","Day${newDayNum}.txt").writeText("")
             File("$projectDir/src/main/resources","Day${newDayNum}.txt").writeText("")
             File("$projectDir/src/main/kotlin/com/dmc/advent2022", "Day$newDayNum.kt").writeText(
                 """
@@ -104,6 +104,15 @@ tasks {
                         fun setUp() {
                             testInput = readInput(day.index, true)
                             input = readInput(day.index)
+                        }
+                        
+                        @Nested
+                        @DisplayName("Helper methods")
+                        inner class HelperMethods {
+                            @Test
+                            fun `parseInput`(){
+                    
+                            }
                         }
 
                         @Nested
