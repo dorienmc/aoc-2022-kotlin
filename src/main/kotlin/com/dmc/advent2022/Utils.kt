@@ -20,6 +20,24 @@ fun readInput(day: Int, test: Boolean = false): List<String> {
     }
 }
 
+/**
+ * Reads lines from the given input txt file.
+ */
+fun readFile(name: String, path: String = "src/main/resources") = File(path, "$name.txt")
+    .readText()
+
+/**
+ * Reads lines from the given input txt file.
+ */
+fun readFile(day: Int, test: Boolean = false): String {
+    val dayNr = day.toString().padStart(2,'0')
+    if (test){
+        return readFile("Day${dayNr}","src/test/resources")
+    } else {
+        return readFile("Day${dayNr}")
+    }
+}
+
 
 /**
  * The cleaner shorthand for printing output.
