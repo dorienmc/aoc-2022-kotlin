@@ -41,12 +41,21 @@ internal class Day12Test {
         fun friendlyNeighbours() {
             val heightMap = day.parseInput(testInput)
 
-            val answer = heightMap.getFriendlyNeighbours(heightMap.start)
-            assertThat(answer).containsExactly(Point2D(0,1), Point2D(1,0))
+            assertThat(heightMap.start).isEqualTo(Point2D())
+            assertThat(heightMap.end).isEqualTo(Point2D(2,5))
 
-            assertThat(heightMap.getFriendlyNeighbours(heightMap.end)).containsExactly(
-                Point2D(2,4)
-            )
+            assertThat(heightMap.getFriendlyNeighbours(heightMap.start))
+                .containsExactlyInAnyOrder(Point2D(0,1), Point2D(1,0))
+
+            // There is only 1 neighbour from which you can reach the end
+            val neighbours = heightMap.end.cardinalNeighbors()
+            for (point in neighbours) {
+                if (point == Point2D(2, 4)) {
+                    assertThat(heightMap.getFriendlyNeighbours(point)).contains(heightMap.end)
+                } else {
+                    assertThat(heightMap.getFriendlyNeighbours(point)).doesNotContain(heightMap.end)
+                }
+            }
         }
     }
 

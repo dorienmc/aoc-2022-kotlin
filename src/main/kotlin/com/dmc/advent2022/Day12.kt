@@ -21,11 +21,8 @@ class Day12 : Day<Int> {
     class Heightmap(val elevations : Map<Point2D, Int>, val start: Point2D, val end: Point2D) {
 
         fun shortestPath(begin: Point2D, end: Point2D) : Int? {
-            val queue = PriorityQueue<PathCost>()
+            val queue = PriorityQueue<Path>().apply { Path(begin, 0) }
             val explored = mutableSetOf<Point2D>()
-
-            // Start at the start
-            queue.add(PathCost(begin, 0))
 
             // BFS
             while (queue.isNotEmpty()) {
@@ -38,7 +35,7 @@ class Day12 : Day<Int> {
                     // If neighbour is goal then we are almost there
                     if (neighbours.any { it == end }) return nextCost
                     // Otherwise, keep on looking
-                    queue.addAll(neighbours.map { PathCost(it, nextCost) })
+                    queue.addAll(neighbours.map { Path(it, nextCost) })
                 }
             }
             // No path found
@@ -61,8 +58,8 @@ class Day12 : Day<Int> {
         }
     }
 
-    class PathCost(val point: Point2D, val cost: Int) : Comparable<PathCost> {
-        override fun compareTo(other: PathCost): Int =
+    class Path(val point: Point2D, val cost: Int) : Comparable<Path> {
+        override fun compareTo(other: Path): Int =
             this.cost.compareTo(other.cost)
     }
 
