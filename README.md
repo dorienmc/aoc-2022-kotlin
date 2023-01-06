@@ -1,4 +1,5 @@
 # aoc-2022-kotlin
+[![Build and Test](https://github.com/dorienmc/aoc-2022-kotlin/actions/workflows/build.yml/badge.svg)](https://github.com/dorienmc/aoc-2022-kotlin/actions/workflows/build.yml)
 
 Welcome to the Advent of Code[^aoc] Kotlin project created by [dorienmc][github] using the [Advent of Code Kotlin Template][template] delivered by JetBrains.
 

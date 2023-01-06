@@ -21,7 +21,7 @@ class Day12 : Day<Int> {
     class Heightmap(val elevations : Map<Point2D, Int>, val start: Point2D, val end: Point2D) {
 
         fun shortestPath(begin: Point2D, end: Point2D) : Int? {
-            val queue = PriorityQueue<Path>().apply { Path(begin, 0) }
+            val queue = PriorityQueue<Path>().apply { add(Path(begin, 0)) }
             val explored = mutableSetOf<Point2D>()
 
             // BFS
