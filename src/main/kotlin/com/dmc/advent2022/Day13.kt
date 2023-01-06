@@ -9,13 +9,22 @@ class Day13 : Day<Int> {
 
         return packets.chunked(2).withIndex().filter {
             it.value[0] < it.value[1] // left should be smaller than right
-        }.sumOf({
+        }.sumOf {
             it.index + 1 // first pair has index 1
-        })
+        }
     }
 
     override fun part2(input: List<String>): Int {
-        TODO("Not yet implemented")
+        val packets = input.filter { it.isNotEmpty() }.map{ it.toPacket() }.toMutableList()
+
+        //Add divider packets
+        val divider2 = "[[2]]".toPacket()
+        val divider6 = "[[6]]".toPacket()
+
+        // Sort and find indices of dividers
+        val sorted = (packets + divider2 + divider6).sorted()
+        return (sorted.indexOf(divider2) + 1) * (sorted.indexOf(divider6) + 1)
+
     }
 
     sealed class Packet : Comparable<Packet> {
@@ -37,24 +46,21 @@ class Day13 : Day<Int> {
                         }
                     }
                 }
-                return ListPacket(packets).get(0) //need the get(0) otherwise it is packages twice
+                return ListPacket(packets).first() //need the first() otherwise it is packages twice
             }
         }
     }
 
     data class IntPacket(val value: Int) : Packet() {
-        override fun compareTo(other: Packet): Int {
-//            println("Compare $this to $other")
-            return if (other is IntPacket) {
-                this.value.compareTo(other.value)
-            } else {
-                ListPacket(mutableListOf(this)).compareTo(other)
-            }
-        }
+        fun asList(): Packet = ListPacket(mutableListOf(this))
 
-        override fun toString(): String {
-            return value.toString()
-        }
+        override fun compareTo(other: Packet): Int =
+            when (other) {
+                is IntPacket -> this.value.compareTo(other.value)
+                is ListPacket -> this.asList().compareTo(other)
+            }
+
+        override fun toString(): String = value.toString()
     }
 
     class ListPacket(private val packet: MutableList<Packet> = mutableListOf()) : Packet(), Iterable<Packet> {
@@ -66,21 +72,11 @@ class Day13 : Day<Int> {
         override fun compareTo(other: Packet): Int {
 //            println("Compare $this to $other")
             return when (other) {
-                is IntPacket -> this.compareTo(ListPacket(mutableListOf(other)))
+                is IntPacket -> this.compareTo(other.asList())
                 is ListPacket -> {
-                    for( i in 0 until this.size()) {
-                        // If the right list runs out of items first, the inputs are not in the right order.
-                        if (i >= other.size()) return 1
-
-                        // Compare elements
-                        val comparison = this.get(i).compareTo(other.get(i))
-                        if (comparison != 0) return comparison
-                        // Otherwise continue
-                    }
-                    if (this.size() < other.size()) return -1
-                    if (this.size() == other.size()) return 0
-
-                    return -1
+                    return this.packet.zip(other.packet).map {
+                        it.first.compareTo(it.second)
+                    }.firstOrNull { it != 0 } ?: this.size().compareTo(other.size())
                 }
             }
         }
@@ -89,13 +85,26 @@ class Day13 : Day<Int> {
             return packet.toString()
         }
 
-        fun get(index: Int): Packet {
-            return packet.get(index)
-        }
-
         override fun iterator(): Iterator<Packet> {
             return packet.iterator()
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as ListPacket
+
+            if (packet != other.packet) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return packet.hashCode()
+        }
+
+
     }
 
 
